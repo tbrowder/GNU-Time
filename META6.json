@@ -1,0 +1,25 @@
+{
+  "auth": "cpan:TBROWDER",
+  "authors": [
+    "Tom Browder"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+  ],
+  "description": "blah blah blah",
+  "license": "Artistic-2.0",
+  "name": "GNU::Time",
+  "perl": "6.d",
+  "provides": {
+    "GNU::Time": "lib/GNU/Time.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "",
+  "tags": [
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}

@@ -1,0 +1,6 @@
+use Test;
+use GNU::Time;
+
+pass "replace me";
+
+done-testing;

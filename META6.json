@@ -6,8 +6,9 @@
   "build-depends": [
   ],
   "depends": [
+    "Proc::Easy"
   ],
-  "description": "blah blah blah",
+  "description": "Provides an easy interface to the GNU 'time' command",
   "license": "Artistic-2.0",
   "name": "GNU::Time",
   "perl": "6.d",

@@ -1,3 +1,5 @@
+[![Actions Status](https://github.com/tbrowder/GNU-Time/workflows/test/badge.svg)](https://github.com/tbrowder/GNU-Time/actions)
+
 NAME
 ====
 

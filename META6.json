@@ -6,7 +6,6 @@
   "build-depends": [
   ],
   "depends": [
-    "Proc::Easy"
   ],
   "description": "Provides an easy interface to the GNU 'time' command",
   "license": "Artistic-2.0",
@@ -19,6 +18,7 @@
   ],
   "source-url": "https://github.com/tbrowder/GNU-Time.git",
   "tags": [
+    "POSIX time function"
   ],
   "test-depends": [
   ],

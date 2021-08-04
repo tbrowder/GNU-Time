@@ -1,7 +1,5 @@
 unit class GNU::Time:ver<0.0.1>:auth<cpan:TBROWDER>;
 
-use Proc::Easy;
-
 # need some regexes to make life easier
 my token typ { ^ :i             # the desired time(s) to return:
                     a|all|      # show all three times:
@@ -236,3 +234,46 @@ sub time-command(Str:D $cmd,
 
 } # time-command
 
+# this should be the identical code as in Proc::Easy:
+sub run-command(Str:D $cmd,
+                :$err,
+		:$out,
+		:$all,
+		:$dir,                # run command in dir 'dir'
+                Hash() :$env = %*ENV,
+		:$debug,
+	       ) {
+    # default is to return the exit code which should be zero (false) for a successful command execuiton
+    # :dir runs the command in 'dir'
+    # :all returns a list of three items: exit code, stderr, and stdout
+    # :err returns stderr
+    # :out returns stdout
+    # :debug prints extra info to stdout AFTER the proc command
+
+    my $cwd = $*CWD;
+    chdir $dir if $dir;
+    #=== may be in another dir ===
+    my $proc = run $cmd.words, :err, :out;
+    my $exitcode = $proc.exitcode;
+    # always need to close file handles if used
+    my $stderr   = $proc.err.slurp(:close) if $all || $err;
+    my $stdout   = $proc.out.slurp(:close) if $all || $out;
+    #=== leave the other dir ===
+    chdir $cwd if $dir;
+
+    if $exitcode && $debug {
+        say "ERROR:  Command '$cmd' returned with exit code '$exitcode'.";
+        say "  stderr: $stderr" if $stderr;
+        say "  stdout: $stdout" if $stdout;
+    }
+
+    if $all {
+        return $exitcode, $stderr, $stdout;
+    }
+    elsif $out {
+        return $stdout;
+    }
+    else {
+        return $exitcode;
+    }
+} # run-command

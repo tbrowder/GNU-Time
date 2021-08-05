@@ -2,7 +2,10 @@
 
 =head1 NAME
 
-GNU::Time - blah blah blah
+B<GNU::Time> - Provides an easy interface for the GNU C<time> command on Linux and OSX hosts.
+
+NOTE: This module replaces the time-related routines in module B<Proc::More> (which is now
+deprecated).
 
 =head1 SYNOPSIS
 
@@ -14,16 +17,16 @@ use GNU::Time;
 
 =head1 DESCRIPTION
 
-GNU::Time is ...
+GNU::Time provides several routines:
 
 =head1 AUTHOR
 
 Tom Browder <tbrowder@cpan.org>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT and LICENSE
 
-Copyright 2021 Tom Browder
+Copyright © 2021 Tom Browder
 
-This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
+This library is free software; you may redistribute or modify it under the Artistic License 2.0.
 
 =end pod

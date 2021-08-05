@@ -3,7 +3,9 @@
 NAME
 ====
 
-GNU::Time - blah blah blah
+**GNU::Time** - Provides an easy interface for the GNU `time` command on Linux and OSX hosts.
+
+NOTE: This module replaces the time-related routines in module **Proc::More** (which is now deprecated).
 
 SYNOPSIS
 ========
@@ -15,17 +17,17 @@ use GNU::Time;
 DESCRIPTION
 ===========
 
-GNU::Time is ...
+GNU::Time provides several routines:
 
 AUTHOR
 ======
 
 Tom Browder <tbrowder@cpan.org>
 
-COPYRIGHT AND LICENSE
+COPYRIGHT and LICENSE
 =====================
 
-Copyright 2021 Tom Browder
+Copyright © 2021 Tom Browder
 
-This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
+This library is free software; you may redistribute or modify it under the Artistic License 2.0.
 

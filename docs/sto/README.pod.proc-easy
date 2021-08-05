@@ -1,0 +1,69 @@
+=begin pod
+
+=head1 NAME
+
+B<Proc::Easy> - Provides routine C<run-command> to ease using Raku's B<Proc> class.
+
+NOTE: This module replaces the C<run-command> portion of the
+deprecated module C<Proc::More>. Note also the API has changed
+slightly: the previous C<:$all> option was removed and its behavior
+is now the default (i.e., all three of the output parameter values are
+returned as a list of three elements unless only one is selected as an
+option).
+
+=head1 SYNOPSIS
+
+=begin code :lang<raku>
+    use Proc::Easy;
+    my $cmd = "some-user-prog arg1 arg2";
+    my $other-dir = $*TMPDIR";
+    my ($exitcode, $stderr, $stdout) = run-command $cmd, :dir($other-dir);
+=end code
+
+=head1 DESCRIPTION
+
+B<Proc::Easy> is designed to make using the C<run> routine from class
+C<Proc> easier for the usual, simple case when the myriad ways to use
+C<Proc>'s C<run> are not required.
+
+=head2 sub run-command
+
+=begin code :lang<raku>
+
+sub run-command(Str:D $cmd,
+		:$exit,
+                :$err,
+		:$out,
+		:$dir, # run command in dir 'dir'
+		:$debug,
+	       ) is export {...}
+=end code
+
+=head3 Parameters:
+
+=item C<$cmd>    - A string that contains a command suitable for using Raku's C<run> routine
+=item C<:$exit>  - Returns the exit code  which should be zero (false) for a successful command execution
+=item C<:$err>   - Returns C<stderr>
+=item C<:$out>   - Returns C<stdout>
+=item C<:$dir>   - Runs the command in directory 'dir'
+=item C<:$debug> - Prints extra info to stdout AFTER the C<proc> command
+
+=head3 Returns:
+
+A three-element list of the exit code and results from C<stderr>
+and C<stdout>, respectively. Either of the three may be selected individually if
+desired. (If more than one is selected, only one is returned in the
+order of exit code, C<stderr>, or C<stdout>.) There is also the capability
+to send debug messages to C<stdout> by including the C<:$debug> option.
+
+=head1 AUTHOR
+
+Tom Browder <tbrowder@cpan.org>
+
+=head1 COPYRIGHT and LICENSE
+
+Copyright © 2017-2021 Tom Browder
+
+This library is free software; you may redistribute or modify it under the Artistic License 2.0.
+
+=end pod

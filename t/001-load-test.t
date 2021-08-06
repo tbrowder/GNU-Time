@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-use GNU::Time :ALL;
+use GNU::Time;
 
 plan 1;
 

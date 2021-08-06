@@ -4,7 +4,7 @@ use Test;
 
 use File::Temp;
 
-use GNU::Time :ALL;
+use GNU::Time;
 
 plan 129;
 
@@ -35,7 +35,7 @@ my ($prog-file, $fh) = tempfile;
 $fh.print: $prog;
 $fh.close;
 
-my $cmd = "perl6 $prog-file";
+my $cmd = "raku $prog-file";
 
 my ($res, $typ, $fmt);
 my $debug = 0;

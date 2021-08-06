@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-use GNU::Time :ALL;
+use GNU::Time;
 
 use File::Temp;
 
@@ -34,7 +34,7 @@ my ($prog-file, $fh) = tempfile;
 $fh.print: $prog;
 $fh.close;
 
-my $cmd = "perl6 $prog-file";
+my $cmd = "raku $prog-file";
 
 # run tests in the local dir
 # tests 9-10
@@ -48,7 +48,7 @@ $fh2.print: $prog;
 $fh2.close;
 
 # tests 11-12
-$cmd = "perl6 $f";
+$cmd = "raku $f";
 lives-ok { $time = time-command $cmd, :dir($*TMPDIR); }
 say "DEBUG: \$time = '$time'" if $debug;
 cmp-ok $time, '>', 0;

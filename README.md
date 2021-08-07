@@ -12,7 +12,7 @@ SYNOPSIS
 
 ```raku
 use GNU::Time;
-say time-command "locate lib"; # OUTPUT 0.260
+say time-command "locate lib"; # OUTPUT: «0.260␤»
 ```
 
 DESCRIPTION
@@ -23,14 +23,20 @@ DESCRIPTION
 sub time-command
 ----------------
 
-Purpose : Collect the process times for a system or user command (using the GNU `time` command). Runs the input command using the system `run` function and returns the process times shown below.
+Purpose : Collect the process times for a system or user command (using the GNU `time` command). Runs the input command using the Raku `run` routine and returns the process times shown below:
+
+  * - `real` - real (wall clock) time
+
+  * - `user` - user time [default]
+
+  * - `system` - system time
 
 ```raku
 sub time-command(Str:D $cmd,
-                 :$typ where { $typ ~~ &typ } = 'u',            
-                 :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, 
+                 :$typ where { $typ ~~ &typ } = 'u',
+                 :$fmt where { !$fmt.defined || $fmt ~~ &fmt },
 		 :$dir,
-                 Bool :$list = False,
+                 :$list,
                 ) is export {...}
 ```
 
@@ -49,7 +55,7 @@ sub time-command(Str:D $cmd,
 ### The `typ` and `fmt` tokens:
 
 ```raku
-my token typ { ^ :i        
+my token typ { ^ :i
     # the desired time(s) to return:
     a|all|   # show all times in desired format
     r|real|  # show real (wall clock) time
@@ -57,10 +63,10 @@ my token typ { ^ :i
     s|sys    # show the system time
 $ }
 
-my token fmt { ^ :i        
-    # the desired format for the time(s) 
+my token fmt { ^ :i
+    # the desired format for the time(s)
                 # [default: raw seconds]
-    s|seconds|  # time in seconds with an appended 
+    s|seconds|  # time in seconds with an appended
                 #   's': "30.42s"
     h|hms|      # time in hms format: "0h00m30.42s"
     ':'|'h:m:s' # time in h:m:s format: "0:00:30.42"

@@ -11,7 +11,7 @@ deprecated).
 
 =begin code :lang<raku>
 use GNU::Time;
-say time-command "locate lib"; # OUTPUT 0.260
+say time-command "locate lib"; # OUTPUT: «0.260␤»
 =end code
 
 =head1 DESCRIPTION
@@ -21,27 +21,30 @@ to the GNU C<time> command on Linux and OSX hosts.
 
 =head2 sub time-command
 
-Purpose : Collect the process times for a system or user command (using the GNU C<time> command).
-Runs the input command using the system C<run> function and returns
-the process times shown below.
+Purpose : Collect the process times for a system or user command
+(using the GNU C<time> command).  Runs the input command using the
+Raku C<run> routine and returns the process times shown below:
+
+=item - C<real> - real (wall clock) time
+=item - C<user> - user time [default]
+=item - C<system> - system time
 
 =begin code :lang<raku>
 sub time-command(Str:D $cmd,
-                 :$typ where { $typ ~~ &typ } = 'u',            
-                 :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, 
+                 :$typ where { $typ ~~ &typ } = 'u',
+                 :$fmt where { !$fmt.defined || $fmt ~~ &fmt },
 		 :$dir,
-                 Bool :$list = False,
+                 :$list,
                 ) is export {...}
 =end code
-
 
 =head3 Parameters:
 
 =item C<$cmd> - The command as a string.
-Note special characters are not recognized by Raku's C<run> routine, 
+Note special characters are not recognized by Raku's C<run> routine,
 so results may not be as expected if they are part of the command.
 
-=item C<:$typ> - Type of time values to return 
+=item C<:$typ> - Type of time values to return
 (see token C<typ> definition)
 
 =item C<:$fmt> - Desired format of returned time values
@@ -53,7 +56,7 @@ so results may not be as expected if they are part of the command.
 =head3 The C<typ> and C<fmt> tokens:
 
 =begin code :lang<raku>
-my token typ { ^ :i        
+my token typ { ^ :i
     # the desired time(s) to return:
     a|all|   # show all times in desired format
     r|real|  # show real (wall clock) time
@@ -61,10 +64,10 @@ my token typ { ^ :i
     s|sys    # show the system time
 $ }
 
-my token fmt { ^ :i        
-    # the desired format for the time(s) 
+my token fmt { ^ :i
+    # the desired format for the time(s)
                 # [default: raw seconds]
-    s|seconds|  # time in seconds with an appended 
+    s|seconds|  # time in seconds with an appended
                 #   's': "30.42s"
     h|hms|      # time in hms format: "0h00m30.42s"
     ':'|'h:m:s' # time in h:m:s format: "0:00:30.42"
@@ -74,7 +77,8 @@ $ }
 =head3 Returns:
 
 A string consisting in one or all of real (wall clock), user, and
- system times (in one of four formats), or a list as in the original API.
+system times (in one of four formats), or a list as in the original
+API.
 
 =head1 AUTHOR
 

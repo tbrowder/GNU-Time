@@ -1,7 +1,7 @@
 unit module GNU::Time:ver<0.0.1>:auth<cpan:TBROWDER>;
 
 # need some regexes to make life easier
-my token typ { ^ :i        
+my token typ { ^ :i
     # the desired time(s) to return:
     a|all|   # show all times in desired format
     r|real|  # show real (wall clock) time
@@ -9,10 +9,10 @@ my token typ { ^ :i
     s|sys    # show the system time
 $ }
 
-my token fmt { ^ :i        
-    # the desired format for the time(s) 
+my token fmt { ^ :i
+    # the desired format for the time(s)
                 # [default: raw seconds]
-    s|seconds|  # time in seconds with an appended 
+    s|seconds|  # time in seconds with an appended
                 #   's': "30.42s"
     h|hms|      # time in hms format: "0h00m30.42s"
     ':'|'h:m:s' # time in h:m:s format: "0:00:30.42"
@@ -124,9 +124,9 @@ sub read-sys-time($result,
         my $rt = seconds-to-hms(+$Rts, :fmt<h>);
         my $ut = seconds-to-hms(+$Uts, :fmt<h>);
         my $st = seconds-to-hms(+$Sts, :fmt<h>);
-	return $Rts, $rt,
-               $Uts, $ut,
-               $Sts, $st;
+	return "real\t$rt\n",
+               "user\t$ut\n",
+               "sys\t$st";
     }
     else {
         # just return the string

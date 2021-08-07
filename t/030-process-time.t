@@ -22,7 +22,10 @@ my token as { <typr> \s* <s> ';' \s* <typu> \s* <s> ';' \s* <typs> \s* <s> }
 my token ah { <typr> \s* <h> ';' \s* <typu> \s* <h> ';' \s* <typs> \s* <h> }
 my token aH { <typr> \s* <H> ';' \s* <typu> \s* <H> ';' \s* <typs> \s* <H> }
 
-my token list { <num> \s* <h> \s* <num> \s* <h> \s* <num> \s* <h> }
+my token list { :i
+                real \t <h> \s*
+                user \t <h> \s*
+                sys  \t <h> \s* }
 
 my $prog = q:to/HERE/;
 my $i = 0;

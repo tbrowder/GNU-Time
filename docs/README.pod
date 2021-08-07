@@ -12,6 +12,10 @@ deprecated).
 =begin code :lang<raku>
 use GNU::Time;
 say time-command "locate lib"; # OUTPUT: «0.260␤»
+say time-command("locate lib", :typ<s>, :fmt<s>, :list);
+(real	0h00m00.32s
+ user	0h00m00.26s
+ sys	0h00m00.02s)
 =end code
 
 =head1 DESCRIPTION
@@ -25,9 +29,11 @@ Purpose : Collect the process times for a system or user command
 (using the GNU C<time> command).  Runs the input command using the
 Raku C<run> routine and returns the process times shown below:
 
-=item - C<real> - real (wall clock) time
-=item - C<user> - user time [default]
-=item - C<system> - system time
+=item C<real> - real (wall clock) time
+=item C<user> - user time [default]
+=item C<system> - system time
+
+=head3 Signature:
 
 =begin code :lang<raku>
 sub time-command(Str:D $cmd,

@@ -26,7 +26,7 @@ $ }
 sub read-sys-time($result,
                   :$typ where { $typ ~~ &typ } = 'u',            # see token 'typ' definition
                   :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
-                  Bool :$list = False,                           # return a list as in the original API
+                  :$list,                                        # return a list as in the original API
                   :$debug,
                  ) {
 
@@ -182,8 +182,8 @@ sub seconds-to-hms($Time,
 sub time-command(Str:D $cmd,
                  :$typ where { $typ ~~ &typ } = 'u',            # see token 'typ' definition
                  :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
-		 :$dir,                                         # run command in dir 'dir'
-                 Bool :$list = False,                           # return a list as in the original API
+                 :$dir,                                         # run command in dir 'dir'
+                 :$list,                                        # return a list as in the original API
                 ) is export {
     # runs the input cmd using the system 'run' function and returns
     # the process times shown below

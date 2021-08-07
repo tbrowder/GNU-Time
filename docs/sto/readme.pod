@@ -39,7 +39,7 @@ running C<man 1 time> at the command line.
 
 This module will look for time in the following locations and order:
 
-=item The location defined by the C<LINUX_PROC_TIME> environment variable
+=item The location defined by the C<GNU_TIME> environment variable
 =item C</usr/local/bin/time>
 =item C</usr/bin/time>
 

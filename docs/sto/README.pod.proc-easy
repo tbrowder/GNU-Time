@@ -29,7 +29,6 @@ C<Proc>'s C<run> are not required.
 =head2 sub run-command
 
 =begin code :lang<raku>
-
 sub run-command(Str:D $cmd,
 		:$exit,
                 :$err,

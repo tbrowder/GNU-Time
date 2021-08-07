@@ -1,18 +1,22 @@
-unit class GNU::Time:ver<0.0.1>:auth<cpan:TBROWDER>;
+unit module GNU::Time:ver<0.0.1>:auth<cpan:TBROWDER>;
 
 # need some regexes to make life easier
-my token typ { ^ :i             # the desired time(s) to return:
-                    a|all|      # show all three times:
-		                #   "Real: [time in desired format]; User: [ditto]; Sys: [ditto]"
-                    r|real|     # show only the real (wall clock) time
-                    u|user|     # show only the user time [default]
-                    s|sys       # show only the system time
-             $ }
-my token fmt { ^ :i             # the desired format for the returned time(s) [default: raw seconds]
-                    s|seconds|  # time in seconds with an appended 's': "30.42s"
-                    h|hms|      # time in hms format: "0h00m30.42s"
-                    ':'|'h:m:s' # time in h:m:s format: "0:00:30.42"
-             $ }
+my token typ { ^ :i        
+    # the desired time(s) to return:
+    a|all|   # show all times in desired format
+    r|real|  # show real (wall clock) time
+    u|user|  # show the user time [default]
+    s|sys    # show the system time
+$ }
+
+my token fmt { ^ :i        
+    # the desired format for the time(s) 
+                # [default: raw seconds]
+    s|seconds|  # time in seconds with an appended 
+                #   's': "30.42s"
+    h|hms|      # time in hms format: "0h00m30.42s"
+    ':'|'h:m:s' # time in h:m:s format: "0:00:30.42"
+$ }
 
 #------------------------------------------------------------------------------
 # Subroutine: read-sys-time
@@ -138,7 +142,7 @@ sub read-sys-time($result,
 # Returns : Time in in seconds (without or with a trailing 's') or hms format, e.g, '3h02m02.65s', or h:m:s format, e.g., '3:02:02.65'.
 sub seconds-to-hms($Time,
                    :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
-                   --> Str) is export(:seconds-to-hms) {
+                   --> Str) {
 
     my $time = $Time;
 
@@ -180,14 +184,13 @@ sub time-command(Str:D $cmd,
                  :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
 		 :$dir,                                         # run command in dir 'dir'
                  Bool :$list = False,                           # return a list as in the original API
-                 Hash() :$env = %*ENV,
-                ) is export(:time-command) {
+                ) is export {
     # runs the input cmd using the system 'run' function and returns
     # the process times shown below
 
     # look for the time program in several places:
     my $TCMD;
-    my $TE = 'PROC_MORE_TIME';
+    my $TE = 'GNU_TIME';
     my @t = <
         /usr/bin/time
         /usr/local/bin
@@ -212,10 +215,10 @@ sub time-command(Str:D $cmd,
     my $CMD = "$TCMD $cmd";
     my ($exitcode, $stderr, $stdout);
     if $dir {
-	($exitcode, $stderr, $stdout) = run-command $CMD, :all, :$env, :$dir;
+	($exitcode, $stderr, $stdout) = run-command $CMD, :all, :$dir;
     }
     else {
-	($exitcode, $stderr, $stdout) = run-command $CMD, :all, :$env;
+	($exitcode, $stderr, $stdout) = run-command $CMD, :all;
     }
     if $exitcode {
         die qq:to/HERE/;
@@ -240,7 +243,6 @@ sub run-command(Str:D $cmd,
 		:$out,
 		:$all,
 		:$dir,                # run command in dir 'dir'
-                Hash() :$env = %*ENV,
 		:$debug,
 	       ) {
     # default is to return the exit code which should be zero (false) for a successful command execuiton

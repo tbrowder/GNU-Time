@@ -1,12 +1,16 @@
 unit module GNU::Time:ver<0.0.1>:auth<cpan:TBROWDER>;
 
+use Proc::Easy;
+
+constant $gte = "GNU_Time_Format"; # environment variable
+
 # need some regexes to make life easier
 my token typ { ^ :i
     # the desired time(s) to return:
-    a|all|   # show all times in desired format
-    r|real|  # show real (wall clock) time
-    u|user|  # show the user time [default]
-    s|sys    # show the system time
+             # [default: all are returned]
+    r|real|  # show real (wall clock) time only
+    u|user|  # show the user time only
+    s|sys    # show the system time only
 $ }
 
 my token fmt { ^ :i
@@ -18,21 +22,35 @@ my token fmt { ^ :i
     ':'|'h:m:s' # time in h:m:s format: "0:00:30.42"
 $ }
 
+my token rtn { ^ :i
+    # the desired type of return:
+    # [default: string]
+    l|list|  
+    h|hash|  
+$ }
+
 #------------------------------------------------------------------------------
 # Subroutine: read-sys-time
 # Purpose : An internal helper function that is not exported.
 # Params  : A string that contains output from the GNU 'time' command, and three named parameters that describe which type of time values to return and in what format.
 # Returns : A string consisting in one or all of real (wall clock), user, and system times (in one of four formats), or a list as in the original API.
 sub read-sys-time($result,
-                  :$typ where { $typ ~~ &typ } = 'u',            # see token 'typ' definition
+                  :$typ where { !$typ.defined || $typ ~~ &typ }, # see token 'typ' definition
                   :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
-                  :$list,                                        # return a list as in the original API
+                  :$rtn where { !$rtn.defined || $rtn ~~ &rtn }, # see token 'rtn' definition
                   :$debug,
                  ) {
 
+    # check for a default format if none are specified here
+    my ($dtyp, $dfmt, $drtn) = decode-gnu-time-format;
+    my $Typ = $dtyp.defined ?? $dtyp !! $typ;
+    my $Fmt = $dfmt.defined ?? $dfmt !! $fmt;
+    my $Rtn = $drtn.defined ?? $drtn !! $rtn;
+    
     note "DEBUG: time result '$result'" if $debug;
     # get the individual seconds for each type of time
-    my ($Rts, $Uts, $Sts);
+    my ($Rts, $Uts, $Sts); # formatted values (three decimal places)
+    my ($Rtr, $Utr, $Str); # raw values
     for $result.lines -> $line {
 	note "DEBUG: line: $line" if $debug;
 
@@ -40,14 +58,17 @@ sub read-sys-time($result,
 	my $sec = $line.words[1];
 	given $typ {
             when /real/ {
+                $Rtr = $sec;
 		$Rts = sprintf "%.3f", $sec;
 		note "DEBUG: rts: $Rts" if $debug;
             }
             when /user/ {
+                $Utr = $sec;
 		$Uts = sprintf "%.3f", $sec;
 		note "DEBUG: uts: $Uts" if $debug;
             }
             when /sys/ {
+                $Str = $sec;
 		$Sts = sprintf "%.3f", $sec;
 		note "DEBUG: sts: $Sts" if $debug;
             }
@@ -210,16 +231,23 @@ sub time-command(Str:D $cmd,
         die "FATAL: The 'time' command was not found on this host.";
     }
 
-    $TCMD ~= ' -p'; # the '-t' option gives the standard POSIX output display
+    # the '-p' option gives the standard POSIX output display:
+    #   >$ time locate lib
+    #   >real 1.35
+    #   >user 0.42
+    #   >sys 0.28
+
+    $TCMD ~= ' -p';
 
     my $CMD = "$TCMD $cmd";
     my ($exitcode, $stderr, $stdout);
     if $dir {
-	($exitcode, $stderr, $stdout) = run-command $CMD, :all, :$dir;
+	($exitcode, $stderr, $stdout) = run-command $CMD, :$dir;
     }
     else {
-	($exitcode, $stderr, $stdout) = run-command $CMD, :all;
+	($exitcode, $stderr, $stdout) = run-command $CMD;
     }
+
     if $exitcode {
         die qq:to/HERE/;
             FATAL: The '$CMD' command returned a non-zero exitcode: $exitcode
@@ -236,6 +264,19 @@ sub time-command(Str:D $cmd,
     }
 
 } # time-command
+
+#  my ($dtyp, $dfmt, $drtn) = decode-gnu-time-format;
+sub decode-gnu-time-format {
+    my $s = %*ENV{$gte} // Nil;
+    my ($typ, $fmt, $rtn);
+    return ($typ, $fmt, $rtn) unless $s;
+
+    
+
+} # sub decode-gnu-time-format
+
+
+=finish
 
 # this should be the identical code as in Proc::Easy:
 sub run-command(Str:D $cmd,

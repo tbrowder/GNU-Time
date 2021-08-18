@@ -5,6 +5,8 @@ use Proc::Easy;
 constant $gte = "GNU_Time_Format"; # environment variable
 
 # need some regexes to make life easier
+# Note you must choose either the one-character form
+# or at least the first two characters of the multi-character form.
 my token typ { ^ :i
     # the desired time(s) to return:
               # [default: all are returned]
@@ -87,12 +89,11 @@ sub read-sys-time($Result,
     }
 
     if $rtn.defined {
-        my $val = $rtn.comb[0].lc;
-        if $val eq 'l' {
+        if $rtn ~~ /^l/ {
             # create and return a list
             return $real, $user, $sys;
         }
-        elsif $val eq 'h' {
+        elsif $rtn ~~ /^h/ {
             # create and return a hash
             return %(real => $real, user => $user, sys => $sys, system => $sys);
         }
@@ -101,7 +102,10 @@ sub read-sys-time($Result,
         }
     }
 
-    return $Result if not $typ.defined;
+    # if no type is defined, reassemble and return the string
+    if not $typ.defined {
+        return "real $real\nuser $user\nsys $sys\n"
+    }
 
     if not $typ {
         die qq:to/HERE/;
@@ -244,7 +248,10 @@ sub time-command(Str:D $cmd,
     my $Rtn = $drtn.defined ?? $drtn !! $rtn;
 
     # default is to return same as running "time -p cmd 1> /tmp/stdout"
-    return $result if not ($Typ.defined or $Fmt.defined or $Rtn.defined);
+    if not ($Typ.defined or $Fmt.defined or $Rtn.defined) {
+        note "DEBUG: returning with default time format" if $debug;
+        return $result;
+    }
 
     # more details are handled in a subroutine
     read-sys-time $result, :typ($Typ), :fmt($Fmt), :rtn($Rtn), :$debug;
@@ -273,7 +280,7 @@ sub decode-gnu-time-format is export(:decode-time-format) {
             $typ = 'real';
         }
         elsif $val ~~ /'+'/ {
-            $typ = 'u+s';
+            $typ = '+';
         }
         elsif $val.comb[0] eq 'u' {
             $typ = 'user';
@@ -289,7 +296,7 @@ sub decode-gnu-time-format is export(:decode-time-format) {
             $fmt = 'seconds';
         }
         elsif $val ~~ /':'/ {
-            $fmt = 'h:m:s';
+            $fmt = ':';
         }
         elsif $val.comb[0] eq 'h' {
             $fmt = 'hms';

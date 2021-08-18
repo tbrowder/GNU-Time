@@ -88,6 +88,8 @@ sub time-command(Str:D $cmd,
 
 ### The `typ`, `fmt`, and `rtn` tokens:
 
+Note the user should either use the single-character form of the token or at least two characters of the multi-character form to ensure proper disambiguation of the desired token. For example, the character 'u' alone is taken to be the 'user' type while 'u+' is the "sum" type.
+
 ```raku
 my token typ { ^ :i
     # the desired time(s) to return:
@@ -117,9 +119,9 @@ $ }
 
 ### Returns one of:
 
-  * A string consisting of real (wall clock), user, and system times [default]
+  * A string consisting of real (wall clock), user, **and** system times [default]
 
-  * A string consisting in one of real (wall clock), user, or system times
+  * A string consisting in one of real (wall clock), user, **or** system times
 
   * A list consisting of real (wall clock), user, and system times (in that order)
 

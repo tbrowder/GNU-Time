@@ -101,6 +101,12 @@ so results may not be as expected if they are part of the command.
 
 =head3 The C<typ>, C<fmt>, and C<rtn> tokens:
 
+Note the user should either use the single-character form
+of the token or at least two characters of the multi-character
+form to ensure proper disambiguation of the desired token.
+For example, the character 'u' alone is taken to
+be the 'user' type while 'u+' is the "sum" type.
+
 =begin code :lang<raku>
 my token typ { ^ :i
     # the desired time(s) to return:
@@ -130,8 +136,8 @@ $ }
 
 =head3 Returns one of:
 
-=item A string consisting of real (wall clock), user, and system times [default]
-=item A string consisting in one of real (wall clock), user, or system times
+=item A string consisting of real (wall clock), user, B<and> system times [default]
+=item A string consisting in one of real (wall clock), user, B<or> system times
 =item A list consisting of real (wall clock), user, and system times (in that order)
 =item A hash of all of real (wall clock), user, and system times keyed by 'real', 'user', and 'system'
 

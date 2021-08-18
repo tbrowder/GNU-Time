@@ -24,7 +24,7 @@ DESCRIPTION
 Raku module **GNU::Time** provides the `time-command` subroutine for easy access to the GNU `time` command on Linux and OSX hosts. The default is to return the same output format as running the following command at the host's command line interface:
 
 ```bash
-$ /bin/time --portability locate lib 1>/tmp/stdout
+$ /bin/time -p locate lib 1>/tmp/stdout
 real 0.23
 user 0.22
 sys 0.01

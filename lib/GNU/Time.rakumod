@@ -220,7 +220,7 @@ sub time-command(Str:D $cmd,
     #   >user 0.42
     #   >sys 0.28
 
-    $TCMD ~= " --portability";
+    $TCMD ~= " -p"; # OSX doesn't recognize option:  --portability
 
     my $CMD = "$TCMD $cmd";
     my ($exitcode, $stderr, $stdout);

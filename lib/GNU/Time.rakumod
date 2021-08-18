@@ -7,10 +7,11 @@ constant $gte = "GNU_Time_Format"; # environment variable
 # need some regexes to make life easier
 my token typ { ^ :i
     # the desired time(s) to return:
-             # [default: all are returned]
-    r|real|  # show real (wall clock) time only
-    u|user|  # show the user time only
-    s|sys    # show the system time only
+              # [default: all are returned]
+    r|real|   # show real (wall clock) time only
+    u|user|   # show the user time only
+    s|sys|    # show the system time only
+    '+'|'u+s' # show sum of user and system time
 $ }
 
 my token fmt { ^ :i
@@ -26,51 +27,38 @@ my token rtn { ^ :i
     # the desired type of return:
     # [default: string]
     l|list|  
-    h|hash|  
+    h|hash
 $ }
 
 #------------------------------------------------------------------------------
 # Subroutine: read-sys-time
-# Purpose : An internal helper function that is not exported.
+# Purpose : An internal helper function that is not exported unless explicitly requested.
 # Params  : A string that contains output from the GNU 'time' command, and three named parameters that describe which type of time values to return and in what format.
 # Returns : A string consisting in one or all of real (wall clock), user, and system times (in one of four formats), or a list as in the original API.
-sub read-sys-time($result,
+sub read-sys-time($Result,
                   :$typ where { !$typ.defined || $typ ~~ &typ }, # see token 'typ' definition
                   :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
                   :$rtn where { !$rtn.defined || $rtn ~~ &rtn }, # see token 'rtn' definition
                   :$debug,
-                 ) {
+                 ) is export(:read-sys-time) {
 
-    # check for a default format if none are specified here
-    my ($dtyp, $dfmt, $drtn) = decode-gnu-time-format;
-    my $Typ = $dtyp.defined ?? $dtyp !! $typ;
-    my $Fmt = $dfmt.defined ?? $dfmt !! $fmt;
-    my $Rtn = $drtn.defined ?? $drtn !! $rtn;
-    
-    note "DEBUG: time result '$result'" if $debug;
+    note "DEBUG: time result '$Result'" if $debug;
     # get the individual seconds for each type of time
-    my ($Rts, $Uts, $Sts); # formatted values (three decimal places)
     my ($Rtr, $Utr, $Str); # raw values
-    for $result.lines -> $line {
+    for $Result.lines -> $line {
 	note "DEBUG: line: $line" if $debug;
 
-	my $typ = $line.words[0];
+	my $type = $line.words[0];
 	my $sec = $line.words[1];
-	given $typ {
+	given $type {
             when /real/ {
                 $Rtr = $sec;
-		$Rts = sprintf "%.3f", $sec;
-		note "DEBUG: rts: $Rts" if $debug;
             }
             when /user/ {
                 $Utr = $sec;
-		$Uts = sprintf "%.3f", $sec;
-		note "DEBUG: uts: $Uts" if $debug;
             }
             when /sys/ {
                 $Str = $sec;
-		$Sts = sprintf "%.3f", $sec;
-		note "DEBUG: sts: $Sts" if $debug;
             }
             default {
                 if $line ~~ /exit|code/ && $line ~~ / (\d+) / {
@@ -81,78 +69,67 @@ sub read-sys-time($result,
 	}
     }
 
-    my $res;
-    if !$fmt {
+    # return as desired by the user
+    my ($real, $user, $sys, $sum);
+
+    if !$fmt.defined {
         # returning raw seconds
-        given $typ {
-            when /^ :i a/ {
-                $res = "Real: $Rts; User: $Uts; Sys: $Sts";
-            }
-            when /^ :i r/ {
-                $res = $Rts;
-            }
-            when /^ :i u/ {
-                $res = $Uts;
-            }
-            when /^ :i s/ {
-                $res = $Sts;
-            }
-        }
-    }
-
-    if $res.defined {
-        if $list {
-            # create and return a list
-	    # in old system: [RUS]ts is the same, [rus]ts is "<seconds to 2 decimals> ]
-            my $rt = seconds-to-hms(+$Rts, :fmt<h>);
-            my $ut = seconds-to-hms(+$Uts, :fmt<h>);
-            my $st = seconds-to-hms(+$Sts, :fmt<h>);
-	    return $Rts, $rt,
-                   $Uts, $ut,
-                   $Sts, $st;
-        }
-        else {
-            # just return the string
-            return $res;
-        }
-    }
-
-    # returning formatted time
-    # convert each to hms or h:m:s
-
-    given $typ {
-        when /^ :i a/ {
-            my $rt = seconds-to-hms(+$Rts, :$fmt);
-            my $ut = seconds-to-hms(+$Uts, :$fmt);
-            my $st = seconds-to-hms(+$Sts, :$fmt);
-            $res = "Real: $rt; User: $ut; Sys: $st";
-        }
-        when /^ :i r/ {
-            $res = seconds-to-hms(+$Rts, :$fmt);
-        }
-        when /^ :i u/ {
-            $res = seconds-to-hms(+$Uts, :$fmt);
-        }
-        when /^ :i s/ {
-            $res = seconds-to-hms(+$Sts, :$fmt);
-        }
-	default { die "FATAL: no option found"; }
-    }
-
-    if $list {
-        # create and return a list
-	# in old system: [RUS]ts is the same, [rus]ts is "<seconds to 2 decimals> ]
-        my $rt = seconds-to-hms(+$Rts, :fmt<h>);
-        my $ut = seconds-to-hms(+$Uts, :fmt<h>);
-        my $st = seconds-to-hms(+$Sts, :fmt<h>);
-	return "real\t$rt\n",
-               "user\t$ut\n",
-               "sys\t$st";
+        $real = $Rtr;
+        $user = $Utr;
+        $sys  = $Str;
+        $sum  = $user + $sys;
     }
     else {
-        # just return the string
-        return $res;
+        $real = seconds-to-hms $Rtr, :$fmt;
+        $user = seconds-to-hms $Utr, :$fmt;
+        $sys  = seconds-to-hms $Str, :$fmt;
+        $sum  = seconds-to-hms $Utr + $Str, :$fmt;
     }
+
+    if $rtn.defined {
+        my $val = $rtn.comb[0].lc;
+        if $val eq 'l' {
+            # create and return a list
+            return $real, $user, $sys;
+        }
+        elsif $val eq 'h' {
+            # create and return a hash
+            return %(real => $real, user => $user, sys => $sys, system => $sys);
+        }
+	else { 
+            die "FATAL: Unknown \$rtn option '$_'"
+        }
+    }
+
+    return $Result if not $typ.defined;
+
+    if not $typ {
+        die qq:to/HERE/;
+        FATAL: Unexpectedly \$typ is an empty string.
+        Please file a bug report.
+        HERE
+    }
+
+    # returning single values
+    my $result;
+    given $typ {
+        when /^ :i r/ {
+            $result = $real
+        }
+        when / '+'/ {
+            $result = $sum
+        }
+        when /^ :i u/ {
+            $result = $user
+        }
+        when /^ :i s/ {
+            $result = $sys
+        }
+	default { 
+            die "FATAL: Unknown \$typ option '$_'" 
+        }
+    }
+    $result
 
 } # read-sys-time
 
@@ -163,7 +140,7 @@ sub read-sys-time($result,
 # Returns : Time in in seconds (without or with a trailing 's') or hms format, e.g, '3h02m02.65s', or h:m:s format, e.g., '3:02:02.65'.
 sub seconds-to-hms($Time,
                    :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
-                   --> Str) {
+                   --> Str) is export(:seconds-to-hms) {
 
     my $time = $Time;
 
@@ -179,7 +156,7 @@ sub seconds-to-hms($Time,
 
     my $ts;
     if !$fmt {
-        $ts = ~$time;
+        $ts = $time;
     }
     elsif $fmt ~~ /^ :i s/ {
         $ts = sprintf "%.2fs", $sec;
@@ -191,7 +168,7 @@ sub seconds-to-hms($Time,
         $ts = sprintf "%dh%02dm%05.2fs", $hr, $min, $sec;
     }
 
-    return $ts;
+    $ts;
 
 } # seconds-to-hms
 
@@ -201,20 +178,22 @@ sub seconds-to-hms($Time,
 # Params : The command as a string, and four named parameters that describe which type of time values to return and in what format. Note that special characters are not recognized by the 'run' routine, so results may not be as expected if they are part of the command.
 # Returns : A string consisting in one or all of real (wall clock), user, and system times (in one of four formats), or a list as in the original API.
 sub time-command(Str:D $cmd,
-                 :$typ where { $typ ~~ &typ } = 'u',            # see token 'typ' definition
+                 :$typ where { !$typ.defined || $typ ~~ &typ }, # see token 'typ' definition
                  :$fmt where { !$fmt.defined || $fmt ~~ &fmt }, # see token 'fmt' definition
+                 :$rtn where { !$rtn.defined || $rtn ~~ &rtn }, # see token 'rtn' definition
                  :$dir,                                         # run command in dir 'dir'
-                 :$list,                                        # return a list as in the original API
+                 :$debug,
                 ) is export {
     # runs the input cmd using the system 'run' function and returns
-    # the process times shown below
+    # the process times according to the input params
 
     # look for the time program in several places:
     my $TCMD;
     my $TE = 'GNU_TIME';
     my @t = <
+        /bin/time
         /usr/bin/time
-        /usr/local/bin
+        /usr/local/bin/time
     >;
     if %*ENV{$TE}:exists && %*ENV{$TE}.IO.f {
         $TCMD = %*ENV{$TE};
@@ -231,92 +210,101 @@ sub time-command(Str:D $cmd,
         die "FATAL: The 'time' command was not found on this host.";
     }
 
-    # the '-p' option gives the standard POSIX output display:
+    # the '-p' option (or --portability) gives the standard POSIX output display:
     #   >$ time locate lib
     #   >real 1.35
     #   >user 0.42
     #   >sys 0.28
 
-    $TCMD ~= ' -p';
+    $TCMD ~= " --portability";
 
     my $CMD = "$TCMD $cmd";
     my ($exitcode, $stderr, $stdout);
-    if $dir {
+    if $dir.defined {
 	($exitcode, $stderr, $stdout) = run-command $CMD, :$dir;
     }
     else {
 	($exitcode, $stderr, $stdout) = run-command $CMD;
     }
 
-    if $exitcode {
+    if $exitcode.defined and $exitcode {
         die qq:to/HERE/;
             FATAL: The '$CMD' command returned a non-zero exitcode: $exitcode
                    stderr: $stderr
                    stdout: $stdout
             HERE
     }
-    my $result = $stderr; # the time command puts all output to stderr
-    if $fmt.defined {
-        return read-sys-time($result, :$typ, :$fmt, :$list);
-    }
-    else {
-        return read-sys-time($result, :$typ, :$list);
-    }
+
+    my $result = $stderr // ''; # the time command puts all process time output to stderr
+
+    # check for a default format if none are specified here
+    my ($dtyp, $dfmt, $drtn) = decode-gnu-time-format;
+    my $Typ = $dtyp.defined ?? $dtyp !! $typ;
+    my $Fmt = $dfmt.defined ?? $dfmt !! $fmt;
+    my $Rtn = $drtn.defined ?? $drtn !! $rtn;
+
+    # default is to return same as running "time -p cmd 1> /tmp/stdout"
+    return $result if not ($Typ.defined or $Fmt.defined or $Rtn.defined);
+
+    # more details are handled in a subroutine
+    read-sys-time $result, :typ($Typ), :fmt($Fmt), :rtn($Rtn), :$debug;
 
 } # time-command
 
+
 #  my ($dtyp, $dfmt, $drtn) = decode-gnu-time-format;
-sub decode-gnu-time-format {
+sub decode-gnu-time-format is export(:decode-time-format) {
     my $s = %*ENV{$gte} // Nil;
     my ($typ, $fmt, $rtn);
     return ($typ, $fmt, $rtn) unless $s;
 
-    
+    my $debug = 0;
+
+    # remove all whitepace, semicolons, and commas
+    say "\$s original: |$s|" if $debug;
+    $s ~~ s:g/\s//;
+    $s ~~ s:g/';'//;
+    $s ~~ s:g/','//;
+    say "\$s cleaned: |$s|" if $debug;
+
+    if $s ~~ /:i 'typ(' (\S+) ')' / {
+        my $val = ~$0.lc;
+        if $val.comb[0] eq 'r' {
+            $typ = 'real';
+        }
+        elsif $val ~~ /'+'/ {
+            $typ = 'u+s';
+        }
+        elsif $val.comb[0] eq 'u' {
+            $typ = 'user';
+        }
+        elsif $val.comb[0] eq 's' {
+            $typ = 'sys';
+        }
+    }
+
+    if $s ~~ /:i 'fmt(' (\S+) ')' / {
+        my $val = ~$0.lc;
+        if $val.comb[0] eq 's' {
+            $fmt = 'seconds';
+        }
+        elsif $val ~~ /':'/ {
+            $fmt = 'h:m:s';
+        }
+        elsif $val.comb[0] eq 'h' {
+            $fmt = 'hms';
+        }
+    }
+
+    if $s ~~ /:i 'rtn(' (\S+) ')' / {
+        my $val = ~$0.lc;
+        if $val.comb[0] eq 'l' {
+            $rtn = 'list';
+        }
+        elsif $val.comb[0] eq 'h' {
+            $rtn = 'hash';
+        }
+    }
+    $typ, $fmt, $rtn;
 
 } # sub decode-gnu-time-format
-
-
-=finish
-
-# this should be the identical code as in Proc::Easy:
-sub run-command(Str:D $cmd,
-                :$err,
-		:$out,
-		:$all,
-		:$dir,                # run command in dir 'dir'
-		:$debug,
-	       ) {
-    # default is to return the exit code which should be zero (false) for a successful command execuiton
-    # :dir runs the command in 'dir'
-    # :all returns a list of three items: exit code, stderr, and stdout
-    # :err returns stderr
-    # :out returns stdout
-    # :debug prints extra info to stdout AFTER the proc command
-
-    my $cwd = $*CWD;
-    chdir $dir if $dir;
-    #=== may be in another dir ===
-    my $proc = run $cmd.words, :err, :out;
-    my $exitcode = $proc.exitcode;
-    # always need to close file handles if used
-    my $stderr   = $proc.err.slurp(:close) if $all || $err;
-    my $stdout   = $proc.out.slurp(:close) if $all || $out;
-    #=== leave the other dir ===
-    chdir $cwd if $dir;
-
-    if $exitcode && $debug {
-        say "ERROR:  Command '$cmd' returned with exit code '$exitcode'.";
-        say "  stderr: $stderr" if $stderr;
-        say "  stdout: $stdout" if $stdout;
-    }
-
-    if $all {
-        return $exitcode, $stderr, $stdout;
-    }
-    elsif $out {
-        return $stdout;
-    }
-    else {
-        return $exitcode;
-    }
-} # run-command

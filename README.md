@@ -131,10 +131,10 @@ All returned time values are in the default or the selected format.
 
 ### `GNU_Time_Format` environment variable
 
-The user may set the desired default type, format, and return type by setting the <GNU_Time_Format> environment variable as in the following example
+The user may set the desired default type, format, and return type by setting the **GNU_Time_Format** environment variable as in the following example
 
 ```sh
-export GNU_Time_Format='typ(u)fmt(h)rtn(h)'
+export GNU_Time_Format='typ(u)' # returns the user time in seconds
 ```
 
 where 'typ()', 'fmt()', and 'rtn()' are "tokens" with values within their trailing parentheses. The values within parentheses are expected to be the appropriate ones for the signature tokens. Multiple tokens may be separated by semicolons, whitespace, or commas. Whitespace is ignored. Missing values and tokens are ignored as are malformed or unrecognized tokens or values.

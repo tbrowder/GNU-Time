@@ -146,10 +146,10 @@ All returned time values are in the default or the selected format.
 =head3 C<GNU_Time_Format> environment variable
 
 The user may set the desired  default type, format, and return type by setting
-the <GNU_Time_Format> environment variable as in the following example
+the B<GNU_Time_Format> environment variable as in the following example
 
 =begin code :lang<sh>
-export GNU_Time_Format='typ(u)fmt(h)rtn(h)'
+export GNU_Time_Format='typ(u)' # returns the user time in seconds
 =end code
 
 where 'typ()', 'fmt()', and 'rtn()' are "tokens" with values

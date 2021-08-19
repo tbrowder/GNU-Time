@@ -4,9 +4,11 @@ use GNU::Time :ALL;
 # This series of tests is for the "internal" routines
 # in the module.
 
-plan 14;
+plan 20;
 
 my $debug = 0;
+
+my ($typ, $fmt, $rtn);
 
 # An example time string for use as the output from the time-command'
 # routine for further processing:
@@ -30,7 +32,7 @@ for @typ -> $typ {
 }
 
 my @fmt = <s seconds h hms : h:m:s>;
-my $typ = "user";
+$typ = "user";
 for @fmt -> $fmt {
     my $res = read-sys-time time, :$fmt, :$typ;
     if $fmt ~~ /^s/ {
@@ -44,55 +46,20 @@ for @fmt -> $fmt {
     }
 }
 
-=finish
+# Test the GNU_Time_Format environment variable
+%*ENV<GNU_Time_Format> = "typ(u)fmt(h)";
 
-my @rtn = <l list h hash>;
+($typ, $fmt, $rtn) = decode-gnu-time-format;
+is $typ, "u";
+is $fmt, "h";
 
-my $time;
+%*ENV<GNU_Time_Format> = "typ(s)fmt(:)";
+($typ, $fmt, $rtn) = decode-gnu-time-format;
+is $typ, "s";
+is $fmt, ":";
 
-# tests 1-4
-dies-ok { time-command 'fooie'; }
-dies-ok { time-command 'fooie', :dir($*TMPDIR); }
-lives-ok { $time = time-command 'ls -l', :dir($*TMPDIR); }
-say "DEBUG: \$time = '$time'" if $debug;
-cmp-ok $time, '>=', 0;
+%*ENV<GNU_Time_Format> = "typ (+ )fmt(s )";
+($typ, $fmt, $rtn) = decode-gnu-time-format;
+is $typ, "+";
+is $fmt, "s";
 
-# tests 5-8
-lives-ok { $time = time-command 'ls -l'; }
-cmp-ok $time, '>=', 0;
-lives-ok { $time = time-command 'ls -l', :dir($*TMPDIR); }
-cmp-ok $time, '>=', 0;
-
-# run some real commands with errors
-# get a prog with known output
-my $prog = q:to/HERE/;
-$*ERR.print: 'stderr';
-$*OUT.print: 'stdout';
-HERE
-
-my ($prog-file, $fh) = tempfile;
-$fh.print: $prog;
-$fh.close;
-
-my $cmd = "raku $prog-file";
-
-# run tests in the local dir
-# tests 9-10
-lives-ok { $time = time-command $cmd; }
-cmp-ok $time, '>', 0;
-
-# run tests in the tmp dir
-my $f = "prog-file";
-my $fh2 = open "$*TMPDIR/$f", :w;
-$fh2.print: $prog;
-$fh2.close;
-
-# tests 11-12
-$cmd = "raku $f";
-lives-ok { $time = time-command $cmd, :dir($*TMPDIR); }
-say "DEBUG: \$time = '$time'" if $debug;
-cmp-ok $time, '>', 0;
-
-# one more test
-# test 13
-dies-ok { time-command "cd $*TMPDIR; fooie"; }

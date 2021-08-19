@@ -88,7 +88,7 @@ sub time-command(Str:D $cmd,
 
 ### The `typ`, `fmt`, and `rtn` tokens:
 
-Note the user should either use the single-character form of the token or at least two characters of the multi-character form to ensure proper disambiguation of the desired token. For example, the character 'u' alone is taken to be the 'user' type while 'u+' is the "sum" type.
+Note the user should either use the single-character form of the token or at least two characters of the multi-character form to ensure proper disambiguation of the desired token. For example, the character 'u' alone is taken to be the 'user' type while 'u+' is the "sum" type. In all cases, the canonical name of each token is the single-character shown for each token.
 
 ```raku
 my token typ { ^ :i

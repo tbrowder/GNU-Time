@@ -263,7 +263,7 @@ sub time-command(Str:D $cmd,
 sub decode-gnu-time-format is export(:decode-time-format) {
     my $s = %*ENV{$gte} // Nil;
     my ($typ, $fmt, $rtn);
-    return ($typ, $fmt, $rtn) unless $s;
+    return ($typ, $fmt, $rtn) unless $s.defined and $s;
 
     my $debug = 0;
 
@@ -275,41 +275,41 @@ sub decode-gnu-time-format is export(:decode-time-format) {
     say "\$s cleaned: |$s|" if $debug;
 
     if $s ~~ /:i 'typ(' (\S+) ')' / {
-        my $val = ~$0.lc;
-        if $val.comb[0] eq 'r' {
-            $typ = 'real';
+        my $val = ~$0;
+        if $val ~~ /^r/ {
+            $typ = 'r';
         }
         elsif $val ~~ /'+'/ {
             $typ = '+';
         }
-        elsif $val.comb[0] eq 'u' {
-            $typ = 'user';
+        elsif $val ~~ /^u/ {
+            $typ = 'u';
         }
-        elsif $val.comb[0] eq 's' {
-            $typ = 'sys';
+        elsif $val ~~ /^s/ {
+            $typ = 's';
         }
     }
 
     if $s ~~ /:i 'fmt(' (\S+) ')' / {
-        my $val = ~$0.lc;
-        if $val.comb[0] eq 's' {
-            $fmt = 'seconds';
+        my $val = ~$0;
+        if $val ~~ /^s/ {
+            $fmt = 's';
         }
         elsif $val ~~ /':'/ {
             $fmt = ':';
         }
-        elsif $val.comb[0] eq 'h' {
-            $fmt = 'hms';
+        elsif $val ~~ /^h/ {
+            $fmt = 'h';
         }
     }
 
     if $s ~~ /:i 'rtn(' (\S+) ')' / {
-        my $val = ~$0.lc;
-        if $val.comb[0] eq 'l' {
-            $rtn = 'list';
+        my $val = ~$0;
+        if $val ~~ /^l/ {
+            $rtn = 'l';
         }
-        elsif $val.comb[0] eq 'h' {
-            $rtn = 'hash';
+        elsif $val ~~ /^h/ {
+            $rtn = 'h';
         }
     }
     $typ, $fmt, $rtn;

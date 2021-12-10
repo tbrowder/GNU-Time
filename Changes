@@ -1,6 +1,7 @@
 Revision history for GNU-Time
 
 {{$NEXT}}
+    - Publish to Zef repository
 
 0.0.1  2021-08-18T21:20:05-05:00
     - Initial version

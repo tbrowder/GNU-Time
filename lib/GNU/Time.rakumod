@@ -1,4 +1,4 @@
-unit module GNU::Time:ver<0.0.1>:auth<cpan:TBROWDER>;
+unit module GNU::Time;
 
 use Proc::Easy;
 

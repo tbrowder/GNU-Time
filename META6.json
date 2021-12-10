@@ -1,7 +1,7 @@
 {
-  "auth": "cpan:TBROWDER",
+  "auth": "zef:tbrowder",
   "authors": [
-    "Tom Browder"
+    "Tom Browder <tbrowder@acm.org>"
   ],
   "build-depends": [
   ],
